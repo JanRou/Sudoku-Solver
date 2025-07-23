@@ -6,11 +6,11 @@ class BaseSudoku:
         self.type = type # Enumeration: ('Normal', 'Jigsaw', 'Hyper', 'Samurai', 'X' )
         self.sudoku = []  # the sudoku arranged by rows and columns
         self.groups = []  # the soudoku arranged by groups
-        for g in range( 0, dimension):
+        for g in range(self.dimension):
             self.groups.append([])
-        for r in range( 0, self.dimension):
+        for r in range(self.dimension):
             row = []            
-            for c in range( 0, self.dimension):
+            for c in range(self.dimension):
                 cell = createCell(self.dimension, r, c)
                 self.groups[cell.Group].append(cell)
                 row.append( cell )
@@ -52,6 +52,57 @@ class BaseSudoku:
         for r in range(self.dimension):
             for c in range(self.dimension):
                 self.sudoku[r][c].DoChange()
+    
+
+    def CheckCellsConstrain(self, cell1, cell2):
+        # returns true when one of the cells is not solved, otherwise numbers have not to be the same
+        return (not cell1.Solved or not cell2.Solved) or (cell1.Number != cell2.Number)
+
+    def CheckRow(self):
+        result = True
+        for row in range(self.dimension):
+            for column1 in range(self.dimension-1):
+                for column2 in range(column1+1,self.dimension):
+                    result = self.CheckCellsConstrain(self.sudoku[row][column1], self.sudoku[row][column2])
+                    if not result:
+                        break
+                if not result:
+                    break
+            if not result:
+                break
+        return result
+    
+    def CheckColumn(self):
+        result = True
+        for column in range(self.dimension):
+            for row1 in range(self.dimension-1):
+                for row2 in range(row1+1,self.dimension):
+                    result = self.CheckCellsConstrain(self.sudoku[row1][column], self.sudoku[row2][column])
+                    if not result:
+                        break
+                if not result:
+                    break
+            if not result:
+                break
+        return result
+
+    def CheckGroup(self):
+        result = True
+        for group in self.groups:
+            for cell1 in range(self.dimension-1):
+                for cell2 in range(cell1+1, self.dimension):
+                    result = self.CheckCellsConstrain(group[cell1], group[cell2])
+                    if not result:
+                        break
+                if not result:
+                    break
+            if not result:
+                break
+        return result
+
+    def Check(self):
+        # Check sudoku's constraints are fulfilled
+        return self.CheckRow() and self.CheckColumn() and self.CheckGroup()
 
     def SetSingleCandidatesAsnewNumber(self):
         for row in range( 0, self.dimension):

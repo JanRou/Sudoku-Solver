@@ -4,16 +4,17 @@ class BaseCell:
     def __init__(self, dim, row, col, group):
         self.number = 0 # 0 means not solved, 1 - n means solved
         self.dimension = dim # 4=2x2, 9=3x3, 16=4x4, 25=5x5 ...
-        self.row=row    # row and column are 0 based
+        self.row=row # row and column are 0 based
         self.column=col
-        self.changed = False
         self.newNumber = 0 # new number when changed
         self.newCandidates = [] # new candidates when changed
         self.candidates = []
         for col in range(1, 1+self.dimension):
             self.candidates.append(col)
         self.group = group
+        self.changed = False # ?
         self.isInitial = False # is true, when the number is given for the puzzle
+        self.isMarked = False # True when the cell is marked like belonging to a pair
 
     @property
     def Dimension(self):
@@ -40,21 +41,20 @@ class BaseCell:
         self.SetNumber(n)
 
     def SetNumber(self, n, isInitial=False):
-        # Assigning to Number means the cell is marked changed and newNumber holds the solution for cell
-        if isInitial:
-            self.isInitial = isInitial
-            self.number = n
-        else:
-            if 0 < n and n <= self.dimension:
+        # Assigning to Number means the cell is marked changed and newNumber holds the solution for the cell
+        if 0 < n and n <= self.dimension:
+            if isInitial:
+                # Initital number is used, when the sudoku is cleared for retry
+                self.isInitial = isInitial
+                self.number = n
+            else:
                 self.newNumber = n
                 # clear list of candidates and set the only one
-                self.candidates.clear()            
-                for i in range(0, self.dimension):
-                    self.candidates.append(0)
-                self.candidates[n-1] = n
+                self.candidates.clear()
+                self.newCandidates.clear()
                 self.changed = True
-            else:
-                raise ValueError
+        else:
+            raise ValueError            
 
     @property
     def NewNumber(self):
@@ -74,29 +74,38 @@ class BaseCell:
     @property
     def Changed(self):
         return self.changed
+    
+    @property
+    def IsMarked(self):
+        return self.isMarked
+
+    def Mark(self):
+        self.isMarked = True
 
     def DoChange(self):
         # Sets the solution, when newNumber holds a solution and clears list of candidates
         # Clears temporary variables newNumber and newCandidates and changed flag
-        if self.newNumber != 0:
-            self.number = self.newNumber
-            self.candidates = []
-        if self.newCandidates != []:
-            self.candidates = self.newCandidates
-        self.newCandidates = []
-        self.newNumber = 0
-        self.changed = False
+        self.isMarked = False
+        if not self.Solved and self.changed:
+            if self.newNumber != 0:
+                self.number = self.newNumber
+                self.candidates.clear()
+            # Refactor: Can I avoid the copy and clear lists of candidates and newCandidates?
+            if self.newCandidates != []:
+                self.candidates.clear()
+                self.candidates = self.newCandidates.copy()
+            self.newCandidates.clear()
+            self.newNumber = 0
+            self.changed = False
 
     def SetSingleCandidateToNewNumber(self):
         if len(self.candidates) == 1:
             # only one candidate left, set cell newNumber and flag changed
-            for n in self.candidates:
-                if n != 0:
-                    self.newNumber = n
-                    self.changed = True
-                    break
-                else:
-                    raise ValueError
+            if self.candidates[0] != 0:
+                self.newNumber = self.candidates[0]
+                self.changed = True
+            else:
+                raise ValueError
 
     @property
     def Candidates(self):
@@ -107,17 +116,13 @@ class BaseCell:
 
     @property
     def NewCandidates(self):
-        result = []
-        for newCandidate in self.newCandidates:
-            if newCandidate != 0:
-                result.append(newCandidate)
-        return result
+        return self.newCandidates
 
     def Remove(self, candidateToRemove):
         if 0 < candidateToRemove and candidateToRemove <= self.dimension:
             if not self.Solved:
-                if not self.changed:
-                    self.newCandidates = self.candidates.copy()
+                if (not self.changed) or self.newCandidates == []:
+                    self.newCandidates = self.candidates.copy() # copy so new candidates are a new list object
                 if candidateToRemove in self.newCandidates:
                     self.changed = True
                     self.newCandidates.remove(candidateToRemove)
@@ -135,7 +140,7 @@ class BaseCell:
             if self.changed:
                 candidates = self.newCandidates
             for candidate in candidates:
-                if singleCandidates.count(candidate) == 0:
+                if not candidate in singleCandidates:
                     singleCandidates.append(candidate)
         return singleCandidates
     

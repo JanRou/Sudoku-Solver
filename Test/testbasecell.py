@@ -120,9 +120,9 @@ class TestBaseCell(unittest.TestCase):
         dut.Remove(1)
         dut.Remove(2)
         dut.Remove(3)
-        resultNewCandidates = dut.NewCandidates
+        resultNewCandidates = dut.NewCandidates.copy() # Copy the list. It will be cleared in DoChange()
         dut.DoChange()
-        resultCandidates = dut.Candidates
+        resultCandidates = dut.Candidates.copy()
         dut.SetSingleCandidateToNewNumber()
         resultNewNumber = dut.NewNumber
         dut.DoChange()

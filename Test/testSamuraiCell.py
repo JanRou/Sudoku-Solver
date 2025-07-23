@@ -121,9 +121,9 @@ class TestSamuraiCell(unittest.TestCase):
         dut.Remove(1)
         dut.Remove(2)
         dut.Remove(3)
-        resultNewCandidates = dut.NewCandidates
+        resultNewCandidates = dut.NewCandidates.copy()
         dut.DoChange()
-        resultCandidates = dut.Candidates
+        resultCandidates = dut.Candidates.copy()
         dut.SetSingleCandidateToNewNumber()
         resultNewNumber = dut.NewNumber
         dut.DoChange()
@@ -222,11 +222,11 @@ class TestSamuraiCell(unittest.TestCase):
         dut.Remove(1)
         dut.Remove(2)
         dut.Remove(3)
-        resultNewCandidates = dut.NewCandidates
-        resultSharedNewCandidates = shared.NewCandidates
+        resultNewCandidates = dut.NewCandidates.copy() # copy, because the list is cleared in DoChange()
+        resultSharedNewCandidates = shared.NewCandidates.copy()
         dut.DoChange()
-        resultCandidates = dut.Candidates
-        resultSharedCandidates = shared.Candidates
+        resultCandidates = dut.Candidates.copy()
+        resultSharedCandidates = shared.Candidates.copy()
         dut.SetSingleCandidateToNewNumber()
         resultNewNumber = dut.NewNumber
         resultSharedNewNumber = shared.NewNumber

@@ -87,10 +87,10 @@ class TestJigsawSudoku(unittest.TestCase):
         #   ---------  -----------------------------------------
         shape = self.createShape(dimension)
         sudoku= JigsawSudoku( dimension, shape)
-        sudoku.Set( 0, 2, 3)
-        sudoku.Set( 1, 0, 4)
-        sudoku.Set( 2, 3, 1)
-        sudoku.Set( 3, 1, 4)
+        sudoku.Set( 0, 2, 3,True)
+        sudoku.Set( 1, 0, 4,True)
+        sudoku.Set( 2, 3, 1,True)
+        sudoku.Set( 3, 1, 4,True)
         sudoku.DoChange()
         return sudoku
 

@@ -188,7 +188,7 @@ class TestSamuraiSudoku(unittest.TestCase):
             for row in range(dimension):
                 for col in range(dimension):
                     if testSudokus[s] != [] and testSudokus[s][row][col]!=0:
-                        sudoku.Set( s, row, col, testSudokus[s][row][col])
+                        sudoku.Set( s, row, col, testSudokus[s][row][col],True)
 
         sudoku.DoChange()
         return sudoku

@@ -118,7 +118,7 @@ class SamuraiSudoku():
         return self.state
     
     def TakeStep(self):
-        # TODO add more rules and more states
+        # TODO DRY, add more rules and more states
         self.steps = { 0: 'Set single candidate as solution in cells', 1: 'Find possible candidates'
                 , 2: 'Find single candidate in row, column and group', 3: 'Update sudoku'
                 , 4: "Done, solved"}

@@ -45,24 +45,24 @@ class TestBaseSudoku(unittest.TestCase):
     def testDoChange(self):
         # Arrange
         dimension = 4
-        dut = self.create4x4TestSudoku(dimension, self.createCell, False)
+        dut = sudoku= BaseSudoku( dimension, self.createCell, 'Test')
+        sudoku.Set( 0, 2, 3,True)
+        sudoku.Set( 1, 0, 4,True)
+        sudoku.Set( 2, 3, 1,True)
 
         # Act        
+        sudoku.Set( 3, 1, 4, False)
         resultBeforeChange = dut.Changed
-        result02BeforeChange = dut.Sudoku[0][2].Changed
-        result10BeforeChange = dut.Sudoku[1][0].Changed
+        result31BeforeChange = dut.Sudoku[3][1].Changed
         dut.DoChange()
         resultAfterChange = dut.Changed
-        result02AfterChange = dut.Sudoku[0][2].Changed
-        result10AfterChange = dut.Sudoku[1][0].Changed
+        result31AfterChange = dut.Sudoku[3][1].Changed
 
         # Assert
         self.assertTrue(resultBeforeChange)
-        self.assertTrue(result02BeforeChange)
-        self.assertTrue(result10BeforeChange)
+        self.assertTrue(result31BeforeChange)
         self.assertFalse(resultAfterChange)
-        self.assertFalse(result02AfterChange)
-        self.assertFalse(result10AfterChange)
+        self.assertFalse(result31AfterChange)
 
 
     def testSolvedTrue(self):
@@ -364,6 +364,134 @@ class TestBaseSudoku(unittest.TestCase):
         self.assertEqual([1,2,3], result[0][1].Candidates)
         self.assertEqual([1,2,3], result[1][1].Candidates)
 
+    def testcheckCellsConstrainNoneSolved(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        cell1 = dut.sudoku[0][0]
+        cell2 = dut.sudoku[0][1]
+
+        #Act
+        result = dut.CheckCellsConstrain(cell1, cell2)
+
+        #Assert
+        self.assertTrue(result)
+
+    def testcheckCellsConstrainOneSolved(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        cell1 = dut.sudoku[0][0]
+        cell2 = dut.sudoku[0][2]
+
+        #Act
+        result = dut.CheckCellsConstrain(cell1, cell2)
+
+        #Assert
+        self.assertTrue(result)
+
+    def testcheckCellsConstrainSolvedOk(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        dut.sudoku[0][3].SetNumber(2)
+        dut.DoChange()
+        cell1 = dut.sudoku[0][2]
+        cell2 = dut.sudoku[0][3]
+        cellSolvedResult = cell1.Solved and cell2.Solved
+
+        #Act
+        result = dut.CheckCellsConstrain(cell1, cell2)
+
+        #Assert
+        self.assertTrue(cellSolvedResult)
+        self.assertTrue(result)
+
+    def testcheckCellsConstrainSolvedFail(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        dut.sudoku[0][3].SetNumber(3) # same number as cell in [0][2]
+        dut.DoChange()
+        cell1 = dut.sudoku[0][2]
+        cell2 = dut.sudoku[0][3]
+        cellSolvedResult = cell1.Solved and cell2.Solved
+
+        #Act
+        result = dut.CheckCellsConstrain(cell1, cell2)
+
+        #Assert
+        self.assertTrue(cellSolvedResult)
+        self.assertFalse(result)
+
+    def testCheckRow(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+
+        #Act
+        result = dut.CheckRow()
+
+        #Assert
+        self.assertTrue(result)
+    
+    def testCheckColumn(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+
+        #Act
+        result = dut.CheckColumn()
+
+        #Assert
+        self.assertTrue(result)
+
+    def testCheckOk(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+
+        #Act
+        result = dut.Check()
+
+        #Assert
+        self.assertTrue(result)
+
+    def testCheckRowFail(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        dut.sudoku[0][0].SetNumber(3)
+        dut.DoChange()
+
+        #Act        
+        result = dut.CheckRow()
+        resultColumnAndGroup = dut.CheckColumn() and dut.CheckGroup()
+
+        #Assert
+        self.assertFalse(result)
+        self.assertTrue(resultColumnAndGroup)
+
+    def testCheckColumnFail(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        dut.sudoku[1][3].SetNumber(1)
+        dut.DoChange()
+
+        #Act
+        result = dut.CheckColumn()
+        resultRowAndGroup = dut.CheckRow() and dut.CheckGroup()
+
+        #Assert
+        self.assertFalse(result)
+        self.assertTrue(resultRowAndGroup)
+
+    def testCheckGroupFail(self):
+        #Arrange
+        dut = self.create4x4TestSudoku(4, self.createCell)
+        dut.sudoku[1][3].SetNumber(3)
+        dut.DoChange()
+
+        #Act
+        result = dut.CheckGroup()
+        resultRowAndColumn = dut.CheckRow() and dut.CheckColumn()
+
+        #Assert
+        self.assertFalse(result)
+        self.assertTrue(resultRowAndColumn)
+
     def create4x4TestSudoku(self, dimension, createCell, change=True):
         # 4x4 sudoku for test
         #    Sudoku     Candidates  
@@ -376,10 +504,10 @@ class TestBaseSudoku(unittest.TestCase):
         # 3 ! .4! . !  !(1,2,3,4)!-        !(1,2,3,4).(1,2,3,4)!
         #   ---------  -----------------------------------------
         sudoku= BaseSudoku( dimension, createCell, 'Test')
-        sudoku.Set( 0, 2, 3)
-        sudoku.Set( 1, 0, 4)
-        sudoku.Set( 2, 3, 1)
-        sudoku.Set( 3, 1, 4)
+        sudoku.Set( 0, 2, 3,True)
+        sudoku.Set( 1, 0, 4,True)
+        sudoku.Set( 2, 3, 1,True)
+        sudoku.Set( 3, 1, 4,True)
         if change:
             sudoku.DoChange()
         return sudoku

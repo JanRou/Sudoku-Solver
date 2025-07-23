@@ -10,6 +10,7 @@ class SudokuCellView(tk.Canvas):
         self.candidatesFont = font.Font(family='arial', size=7)
         self.initialFont = font.Font(family='arial', size=12, weight="bold" )
         self.solvedFont = font.Font(family='arial', size=12, slant="italic")
+        self.MarkedFont = font.Font(family='arial', size=7)
         self.rho = round(math.sqrt(cell.Dimension)) # rho x rho dimension of cell = 2, 3, 4 ...
 
     def show(self):
@@ -32,4 +33,11 @@ class SudokuCellView(tk.Canvas):
                 for col in range(self.rho): # x direction for text in canvas
                     c = row*self.rho + col + 1
                     if c in candidates:
-                        self.create_text( 14*col + 5 , 13*row + 4 , text=str(c), anchor='nw', font=self.candidatesFont, fill=candidateFill)
+                        if self.cell.IsMarked:
+                            text = self.create_text( 14*col + 5 , 13*row + 3 , text=str(c), anchor='nw', font=self.candidatesFont, fill=candidateFill)
+                            rect=self.create_rectangle(self.bbox(text),outline='', fill='#BFBFBF')
+                            self.tag_lower(rect,text)
+                        else:
+                            self.create_text( 14*col + 5 , 13*row + 3 , text=str(c), anchor='nw', font=self.candidatesFont, fill=candidateFill)
+                        if c in self.cell.Candidates and self.cell.Changed and c not in self.cell.NewCandidates:
+                            self.create_text( 14*col + 5 , 13*row + 3 , text=str(c), anchor='nw', font=self.candidatesFont, fill='#FF0000')
