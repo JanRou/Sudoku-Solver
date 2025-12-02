@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from context import normal
+from normal import normal
 from normal.normalSudoku import NormalSudoku
 
 if __name__ == '__main__':

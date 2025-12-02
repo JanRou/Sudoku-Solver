@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from context import jigsaw
+#from jigsaw.jigsaw import jigsaw
 from basesudoku.basecell import BaseCell
 from basesudoku.basesudoku import BaseSudoku
 

@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from context import normal
+from normal import normal
 from samurai.samuraiSudoku import SamuraiSudoku
 
 if __name__ == '__main__':
